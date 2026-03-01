@@ -1,12 +1,26 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+/** Root response */
+class RootResponseDto {
+  message: string;
+  docs: string;
+}
+
+@ApiTags('root')
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
+  /**
+   * Returns API name and link to Swagger docs.
+   * @returns { message, docs }
+   */
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @ApiOperation({ summary: 'Root endpoint' })
+  @ApiResponse({ status: 200, description: 'API info', schema: { properties: { message: { type: 'string', example: 'TB Wallet API' }, docs: { type: 'string', example: '/api' } } } })
+  root(): RootResponseDto {
+    return {
+      message: 'TB Wallet API',
+      docs: '/api',
+    };
   }
 }

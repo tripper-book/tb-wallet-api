@@ -1,0 +1,5 @@
+-- Reference: initial schema is applied via TypeORM migration 1730300000001-MySQLInitialSchema.
+-- Do not run this file to create schema; use: npm run migration:run
+--
+-- Tables created by the migration: health_check_log, users, payment_providers, wallets,
+-- transactions, orders, credit_requests, credit_request_logs.
