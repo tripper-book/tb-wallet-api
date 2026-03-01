@@ -20,6 +20,12 @@ async function bootstrap() {
     }
   }
   const app = await NestFactory.create(AppModule);
+  // Allow frontend (e.g. localhost:3001) to call this API. Set CORS_ORIGIN in production.
+  const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3001';
+  app.enableCors({
+    origin: corsOrigin.split(',').map((o) => o.trim()),
+    credentials: true,
+  });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -58,11 +64,20 @@ async function bootstrap() {
     .addTag('admin', 'Admin: approve/reject credit requests')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
+  // Enable Swagger in all environments
+  if (process.env.SWAGGER_ENABLED !== 'false') {
+    SwaggerModule.setup('api', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+      customCssUrl:
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.min.css',
+    customJs: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-standalone-preset.js',
+    ],
+    });
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
