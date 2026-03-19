@@ -40,6 +40,7 @@ export class OrdersController {
       psp_order_id: order.psp_order_id ?? undefined,
       psp_token: order.psp_token ?? undefined,
       redirect_url: order.redirect_url ?? undefined,
+      payment_params: (order.metadata?.payu_params as Record<string, string>) ?? undefined,
     };
     return out;
   }

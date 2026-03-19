@@ -12,6 +12,36 @@ import { Request, Response } from 'express';
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
+  private sanitizeForLogs(obj: unknown): unknown {
+    const sensitive = [
+      'password',
+      'token',
+      'authorization',
+      'cookie',
+      'salt',
+      'secret',
+      'client_secret',
+      'clientid',
+      'client_id',
+      'merchant',
+      'key',
+      'hash',
+      'signature',
+    ];
+    const redactKey = (k: string) => sensitive.some((s) => k.toLowerCase().includes(s));
+    const walk = (value: unknown): unknown => {
+      if (value === null || value === undefined) return value;
+      if (typeof value !== 'object') return value;
+      if (Array.isArray(value)) return value.map(walk);
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        out[k] = redactKey(k) ? '[REDACTED]' : walk(v);
+      }
+      return out;
+    };
+    return walk(obj);
+  }
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -35,7 +65,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : { message };
 
     this.logger.error(
-      `${request.method} ${request.url} ${status} | ${JSON.stringify(body)}`,
+      `${request.method} ${request.url} ${status} | ${JSON.stringify(this.sanitizeForLogs(body))}`,
       exception instanceof Error ? exception.stack : undefined,
     );
 

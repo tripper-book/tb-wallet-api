@@ -45,15 +45,36 @@ export class LoggingInterceptor implements NestInterceptor {
   }
 
   private sanitize(obj: unknown): unknown {
-    if (obj === undefined || obj === null) return obj;
-    if (typeof obj !== 'object') return obj;
-    const copy = { ...(obj as Record<string, unknown>) };
-    const sensitive = ['password', 'token', 'authorization', 'cookie'];
-    for (const key of Object.keys(copy)) {
-      if (sensitive.some((s) => key.toLowerCase().includes(s))) {
-        copy[key] = '[REDACTED]';
+    const sensitive = [
+      'password',
+      'token',
+      'authorization',
+      'cookie',
+      // Payments / PayU
+      'salt',
+      'secret',
+      'client_secret',
+      'clientid',
+      'client_id',
+      'merchant',
+      'key',
+      'hash',
+      'signature',
+    ];
+
+    const redactKey = (k: string) => sensitive.some((s) => k.toLowerCase().includes(s));
+
+    const walk = (value: unknown): unknown => {
+      if (value === null || value === undefined) return value;
+      if (typeof value !== 'object') return value;
+      if (Array.isArray(value)) return value.map(walk);
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        out[k] = redactKey(k) ? '[REDACTED]' : walk(v);
       }
-    }
-    return copy;
+      return out;
+    };
+
+    return walk(obj);
   }
 }

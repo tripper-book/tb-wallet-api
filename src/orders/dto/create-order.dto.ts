@@ -33,4 +33,7 @@ export class CreateOrderResponseDto {
   psp_token?: string;
   @ApiPropertyOptional({ description: 'URL to redirect user for payment' })
   redirect_url?: string;
+  /** PayU Hosted Checkout: form params to POST to redirect_url (key, txnid, amount, hash, etc.) */
+  @ApiPropertyOptional({ description: 'PayU only: form params to POST to redirect_url' })
+  payment_params?: Record<string, string>;
 }

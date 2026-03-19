@@ -8,6 +8,9 @@ import { Order } from './entities/order.entity';
 import { MockPspGatewayService } from './mock-psp.service';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
+import { PayuService } from './payu.service';
+import { PayuCallbackController } from './payu-callback.controller';
+import { AdminOrdersController } from './admin-orders.controller';
 
 @Module({
   imports: [
@@ -16,8 +19,8 @@ import { OrdersService } from './orders.service';
     WalletModule,
     TransactionsModule,
   ],
-  controllers: [OrdersController],
-  providers: [OrdersService, MockPspGatewayService],
+  controllers: [OrdersController, PayuCallbackController, AdminOrdersController],
+  providers: [OrdersService, MockPspGatewayService, PayuService],
   exports: [OrdersService],
 })
 export class OrdersModule {}
